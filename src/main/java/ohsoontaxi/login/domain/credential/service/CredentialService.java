@@ -16,5 +16,5 @@ public class CredentialService {
         return kaKaoOauthStrategy.getOauthLink();
     }
 
-
+    //
 }

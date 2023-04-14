@@ -1,6 +1,7 @@
 package ohsoontaxi.login.domain.credential.service;
 
 import lombok.AllArgsConstructor;
+import ohsoontaxi.login.global.client.KakaoOauthClient;
 import ohsoontaxi.login.global.property.OauthProperties;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ public class KaKaoOauthStrategy {
     private static final String QUERY_STRING =
             "/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code";
     private final OauthProperties oauthProperties;
+    private final KakaoOauthClient kakaoOauthClient;
 
     //oauthLink 발급(로그인 페이지 발급)
     public String getOauthLink() {
@@ -23,6 +25,12 @@ public class KaKaoOauthStrategy {
 
     //어세스토큰 발급
     public String getAccessToken(String code) {
-
+        return kakaoOauthClient
+                .kakaoAuth(
+                        oauthProperties.getClientId(),
+                        oauthProperties.getRedirectUrl(),
+                        code,
+                        oauthProperties.getClientSecret()
+                ).getAccessToken();
     }
 }
