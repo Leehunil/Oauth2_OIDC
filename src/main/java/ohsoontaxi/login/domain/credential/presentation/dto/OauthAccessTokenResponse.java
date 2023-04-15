@@ -1,4 +1,4 @@
-package ohsoontaxi.login.global.client.dto;
+package ohsoontaxi.login.domain.credential.presentation.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

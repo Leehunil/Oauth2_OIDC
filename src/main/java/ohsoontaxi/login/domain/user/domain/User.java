@@ -15,15 +15,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nickname;
-
-    private String oauthProvider;
-
     private String oauthId;
 
     private String email;
 
-    private String profilePath;
+    private String name;
+
+    private String gender;
+
+    private String phone_number;
 
     @Enumerated(EnumType.STRING)
     private AccountRole accountRole = AccountRole.USER;
@@ -31,16 +31,16 @@ public class User {
     @Builder
     public User(
             Long id,
-            String nickname,
-            String oauthProvider,
             String oauthId,
             String email,
-            String profilePath) {
+            String name,
+            String gender,
+            String phone_number) {
         this.id = id;
-        this.nickname = nickname;
-        this.oauthProvider = oauthProvider;
         this.oauthId = oauthId;
         this.email = email;
-        this.profilePath = profilePath;
+        this.name = name;
+        this.gender = gender;
+        this.phone_number = phone_number;
     }
 }
