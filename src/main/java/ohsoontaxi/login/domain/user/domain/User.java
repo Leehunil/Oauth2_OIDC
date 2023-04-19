@@ -15,6 +15,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String oauthProvider;
+
     private String oauthId;
 
     private String email;
@@ -32,12 +34,14 @@ public class User {
     public User(
             Long id,
             String oauthId,
+            String oauthProvider,
             String email,
             String name,
             String gender,
             String phone_number) {
         this.id = id;
         this.oauthId = oauthId;
+        this.oauthProvider = oauthProvider;
         this.email = email;
         this.name = name;
         this.gender = gender;
