@@ -1,6 +1,7 @@
 package ohsoontaxi.login.domain.credential.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ohsoontaxi.login.global.client.dto.OIDCPublicKeyDto;
 import ohsoontaxi.login.global.client.dto.OIDCPublicKeysResponse;
 import ohsoontaxi.login.global.security.JwtOIDCProvider;
@@ -11,6 +12,7 @@ import java.security.spec.InvalidKeySpecException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OauthOIDCProvider {
 
     private final JwtOIDCProvider jwtOIDCProvider;
@@ -23,6 +25,7 @@ public class OauthOIDCProvider {
      *
      */
     private String getKidFromUnsignedIdToken(String token, String iss, String aud) {
+        log.info(iss, aud);
         return jwtOIDCProvider.getKidFromUnsignedTokenHeader(token, iss, aud);
     }
 
@@ -34,14 +37,17 @@ public class OauthOIDCProvider {
      * @param oidcPublicKeysResponse
      */
     public OIDCDecodePayload getPayloadFromIdToken(
-            String token, String iss, String aud, OIDCPublicKeysResponse oidcPublicKeysResponse) throws NoSuchAlgorithmException, InvalidKeySpecException {
+            String token, String iss, String aud, OIDCPublicKeysResponse oidcPublicKeysResponse) {
+        log.info("provider token = {}",token);
         String kid = getKidFromUnsignedIdToken(token, iss, aud);
+        log.info("provider kid = {}",kid);
 
         OIDCPublicKeyDto oidcPublicKeyDto =
                 oidcPublicKeysResponse.getKeys().stream()
                         .filter(o -> o.getKid().equals(kid))
                         .findFirst()
                         .orElseThrow();
+        log.info("oidcPublicKeyDto={}",oidcPublicKeyDto);
 
         return (OIDCDecodePayload)
                 jwtOIDCProvider.getOIDCTokenBody(

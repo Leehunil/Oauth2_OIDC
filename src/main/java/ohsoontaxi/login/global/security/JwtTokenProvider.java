@@ -1,12 +1,16 @@
 package ohsoontaxi.login.global.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import ohsoontaxi.login.domain.credential.exception.RefreshTokenExpiredException;
 import ohsoontaxi.login.domain.user.domain.AccountRole;
+import ohsoontaxi.login.global.exception.ExpiredTokenException;
+import ohsoontaxi.login.global.exception.InvalidTokenException;
 import ohsoontaxi.login.global.property.JwtProperties;
 import ohsoontaxi.login.global.security.Auth.AuthDetails;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,7 +33,6 @@ public class JwtTokenProvider {
     private final String ROLE = "role";
     private final String TYPE = "type";
 
-    //발행자
     private final String ISSUER = "knockknock";
 
     public String resolveToken(HttpServletRequest request) {
@@ -43,7 +46,6 @@ public class JwtTokenProvider {
         return null;
     }
 
-    //Authentication 가져오기
     public Authentication getAuthentication(String token) {
         String id = getJws(token).getBody().getSubject();
         String role = (String) getJws(token).getBody().get(ROLE);
@@ -53,15 +55,19 @@ public class JwtTokenProvider {
     }
 
     private Jws<Claims> getJws(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSecretKey()).build().parseClaimsJws(token);
+        try {
+            return Jwts.parserBuilder().setSigningKey(getSecretKey()).build().parseClaimsJws(token);
+        } catch (ExpiredJwtException e) {
+            throw ExpiredTokenException.EXCEPTION;
+        } catch (Exception e) {
+            throw InvalidTokenException.EXCEPTION;
+        }
     }
 
-    //키 해싱
     private Key getSecretKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
     }
 
-    //accessToken build
     private String buildAccessToken(
             Long id, Date issuedAt, Date accessTokenExpiresIn, AccountRole accountRole) {
         final Key encodedKey = getSecretKey();
@@ -76,7 +82,6 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    //refreshToken build
     private String buildRefreshToken(Long id, Date issuedAt, Date accessTokenExpiresIn) {
         final Key encodedKey = getSecretKey();
         return Jwts.builder()
@@ -89,7 +94,6 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    //accessToken 만들기
     public String generateAccessToken(Long id, AccountRole accountRole) {
         final Date issuedAt = new Date();
         final Date accessTokenExpiresIn =
@@ -117,18 +121,20 @@ public class JwtTokenProvider {
         if (isAccessToken(token)) {
             Claims claims = getJws(token).getBody();
             return Long.parseLong(claims.getSubject());
-        } else {
-            return null;
         }
+        throw InvalidTokenException.EXCEPTION;
     }
 
     public Long parseRefreshToken(String token) {
-        if (isRefreshToken(token)) {
-            Claims claims = getJws(token).getBody();
-            return Long.parseLong(claims.getSubject());
-        } else {
-            return null;
+        try {
+            if (isRefreshToken(token)) {
+                Claims claims = getJws(token).getBody();
+                return Long.parseLong(claims.getSubject());
+            }
+        } catch (ExpiredTokenException e) {
+            throw RefreshTokenExpiredException.EXCEPTION;
         }
+        throw InvalidTokenException.EXCEPTION;
     }
 
     public Long getRefreshTokenTTlSecond() {

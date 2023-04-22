@@ -1,6 +1,7 @@
 package ohsoontaxi.login.domain.credential.presentation;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ohsoontaxi.login.domain.credential.presentation.dto.AuthTokensResponse;
 import ohsoontaxi.login.domain.credential.presentation.dto.RegisterRequest;
 import ohsoontaxi.login.domain.credential.service.CredentialService;
@@ -14,6 +15,7 @@ import java.security.spec.InvalidKeySpecException;
 @RestController
 @RequestMapping("/api/v1/credentials")
 @RequiredArgsConstructor
+@Slf4j
 public class CredentialController {
 
     private final CredentialService credentialService;
@@ -23,6 +25,7 @@ public class CredentialController {
     public AvailableRegisterResponse valid(
             @RequestParam("id_token") String token,
             @RequestParam("provider")OauthProvider oauthProvider) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        log.info("controller token = {}",token);
         return credentialService.getUserAvailableRegister(token, oauthProvider);
     }
 

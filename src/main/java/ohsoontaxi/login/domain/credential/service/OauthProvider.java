@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 public enum OauthProvider {
 
+
     KAKAO("KAKAO"),
     GOOGLE("GOOGLE");
     private String oauthProviderName;

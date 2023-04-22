@@ -1,6 +1,7 @@
 package ohsoontaxi.login.domain.credential.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ohsoontaxi.login.domain.credential.domain.RefreshTokenRedisEntity;
 import ohsoontaxi.login.domain.credential.domain.RefreshTokenRedisEntityRepository;
 import ohsoontaxi.login.domain.credential.presentation.dto.AuthTokensResponse;
@@ -10,6 +11,7 @@ import ohsoontaxi.login.domain.user.domain.User;
 import ohsoontaxi.login.domain.user.domain.UserRepository;
 //import ohsoontaxi.login.global.client.dto.AfterOauthResponse;
 import ohsoontaxi.login.global.client.dto.AvailableRegisterResponse;
+import ohsoontaxi.login.global.exception.UserNotFoundException;
 import ohsoontaxi.login.global.security.JwtTokenProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 @Transactional
+@Slf4j
 public class CredentialService {
 
     private final KaKaoOauthStrategy kaKaoOauthStrategy;
@@ -107,6 +110,7 @@ public class CredentialService {
      * @param oauthProvider
      */
     public AvailableRegisterResponse getUserAvailableRegister(String token, OauthProvider oauthProvider) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        log.info("service token = {}",token);
         OauthStrategy oauthstrategy = oauthFactory.getOauthstrategy(oauthProvider); //provider에 맞는 strategy 꺼내기
         OIDCDecodePayload oidcDecodePayload = oauthstrategy.getOIDCDecodePayload(token); //공개 키 가져와서 idtoken 검증
         Boolean isRegistered = !checkUserCanRegister(oidcDecodePayload, oauthProvider); //공개 키로 회원가입 유저인지 확인(true 이미 회원가입한 회원)
@@ -160,7 +164,7 @@ public class CredentialService {
                 userRepository
                         .findByOauthIdAndOauthProvider(
                                 oidcDecodePayload.getSub(), oauthProvider.getValue())
-                        .get();
+                        .orElseThrow(() -> UserNotFoundException.EXCEPTION);
 
         String accessToken =
                 jwtTokenProvider.generateAccessToken(user.getId(), user.getAccountRole());

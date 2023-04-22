@@ -3,6 +3,7 @@ package ohsoontaxi.login.domain.credential.service;
 import lombok.AllArgsConstructor;
 //import ohsoontaxi.login.domain.credential.presentation.dto.OauthCommonUserInfoDto;
 //import ohsoontaxi.login.global.client.KakaoInfoClient;
+import lombok.extern.slf4j.Slf4j;
 import ohsoontaxi.login.global.api.client.KakaoOauthClient;
 //import ohsoontaxi.login.global.client.dto.KakaoInformationResponse;
 import ohsoontaxi.login.global.client.dto.OIDCPublicKeysResponse;
@@ -16,6 +17,7 @@ import java.security.spec.InvalidKeySpecException;
 
 @AllArgsConstructor
 @Component("KAKAO")
+@Slf4j
 public class KaKaoOauthStrategy implements OauthStrategy{
 
 //    private static final String QUERY_STRING =
@@ -79,8 +81,10 @@ public class KaKaoOauthStrategy implements OauthStrategy{
 //        return oauthCommonUserInfoDtoBuilder.build();
 //    }
 
-    public OIDCDecodePayload getOIDCDecodePayload(String token) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public OIDCDecodePayload getOIDCDecodePayload(String token) {
+        log.info("strategy token = {}",token);
         OIDCPublicKeysResponse oidcPublicKeysResponse = kakaoOauthClient.getKakaoOIDCOpenKeys(); //@feign을 이용해서 공개키 배열 가져오기(keys 리스트)
+        log.info("oidcPublicKeysResponse={}",oidcPublicKeysResponse);
         return oauthOIDCProvider.getPayloadFromIdToken(
                 token, ISSUER, oauthProperties.getAppId(), oidcPublicKeysResponse); //id token 검증
     }
